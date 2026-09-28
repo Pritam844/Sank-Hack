@@ -4,17 +4,18 @@ import { db } from './firebase';
 import { fetchIndianRecipes } from './services/api';
 
 import Header from './components/Header';
+import BottomNav from './components/BottomNav';
 import IngredientInput from './components/IngredientInput';
 import RecipeGrid from './components/RecipeGrid';
 import SavedRecipes from './components/SavedRecipes';
+import RescueTips from './components/RescueTips';
 import RecipeModal from './components/RecipeModal';
-import Footer from './components/Footer';
 
 import { CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import './App.css';
 
 export default function App() {
-  // Navigation tab: 'search' | 'saved'
+  // Mobile tabs: 'search' | 'saved' | 'tips'
   const [activeTab, setActiveTab] = useState('search');
 
   // Cuisine style filter: 'Indian' (default) | 'all'
@@ -72,7 +73,6 @@ export default function App() {
         },
         (error) => {
           console.warn('Firebase sync notice (using local session fallback):', error.message);
-          // Fallback to local storage if Firebase rule restricts write
           const localSaved = localStorage.getItem('f2t_saved_recipes');
           if (localSaved) {
             try {
@@ -181,7 +181,6 @@ export default function App() {
 
     try {
       if (isAlreadySaved) {
-        // Find key in savedRecipes
         const targetEntry = Object.entries(savedRecipes).find(
           ([_, item]) => item.id === recipe.id
         );
@@ -190,10 +189,9 @@ export default function App() {
           const [key] = targetEntry;
           const targetRef = ref(db, `savedRecipes/${key}`);
           await remove(targetRef);
-          showToast(`Removed "${recipe.title.slice(0, 30)}..." from saved.`, 'info');
+          showToast(`Removed from saved.`, 'info');
         }
       } else {
-        // Save to Firebase
         const newRef = ref(db, `savedRecipes/rec_${recipe.id}`);
         await set(newRef, {
           id: recipe.id,
@@ -208,11 +206,10 @@ export default function App() {
           savedAt: Date.now()
         });
 
-        showToast(`Saved "${recipe.title.slice(0, 30)}..." to your vault!`, 'success');
+        showToast(`Saved to favorites!`, 'success');
       }
     } catch (err) {
-      console.warn('Firebase write failed, using local storage fallback:', err.message);
-      // Fallback local storage saving
+      console.warn('Firebase write notice, using local storage fallback:', err.message);
       setSavedRecipes((prev) => {
         const updated = { ...prev };
         if (isAlreadySaved) {
@@ -232,7 +229,7 @@ export default function App() {
         setSavedRecipeIds(idSet);
         return updated;
       });
-      showToast(isAlreadySaved ? 'Removed from saved.' : 'Saved to favorites (local session)!', 'success');
+      showToast(isAlreadySaved ? 'Removed from saved.' : 'Saved to favorites!', 'success');
     }
   };
 
@@ -242,9 +239,8 @@ export default function App() {
       const targetKey = fbKey || `rec_${id}`;
       const targetRef = ref(db, `savedRecipes/${targetKey}`);
       await remove(targetRef);
-      showToast('Recipe removed from vault.', 'info');
+      showToast('Recipe removed.', 'info');
     } catch (err) {
-      console.warn('Firebase delete error, removing locally:', err.message);
       setSavedRecipes((prev) => {
         const updated = { ...prev };
         delete updated[fbKey || `rec_${id}`];
@@ -260,73 +256,83 @@ export default function App() {
   const savedCount = Object.keys(savedRecipes || {}).length;
 
   return (
-    <div className="app-layout">
-      {/* Toast Notification */}
-      {toast && (
-        <div className={`toast-notification ${toast.type}`}>
-          {toast.type === 'success' && <CheckCircle2 size={18} className="toast-icon" />}
-          {toast.type === 'error' && <AlertTriangle size={18} className="toast-icon" />}
-          {toast.type === 'info' && <Info size={18} className="toast-icon" />}
-          <span className="toast-text">{toast.message}</span>
-        </div>
-      )}
+    <div className="mobile-app-wrapper">
+      <div className="mobile-shell">
+        {/* Toast Notification */}
+        {toast && (
+          <div className={`toast-notification ${toast.type}`}>
+            {toast.type === 'success' && <CheckCircle2 size={16} className="toast-icon" />}
+            {toast.type === 'error' && <AlertTriangle size={16} className="toast-icon" />}
+            {toast.type === 'info' && <Info size={16} className="toast-icon" />}
+            <span className="toast-text">{toast.message}</span>
+          </div>
+        )}
 
-      {/* Global Navigation Header */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        savedCount={savedCount}
-        ingredientCount={ingredients.length}
-        onClearIngredients={handleClearIngredients}
-      />
+        {/* Mobile Top App Bar */}
+        <Header
+          ingredientCount={ingredients.length}
+          onClearIngredients={handleClearIngredients}
+          onLogoClick={() => setActiveTab('search')}
+        />
 
-      <main className="app-main">
-        {activeTab === 'search' ? (
-          <>
-            {/* Fridge Inventory Input Hero */}
-            <IngredientInput
-              ingredients={ingredients}
-              onAddIngredient={handleAddIngredient}
-              onRemoveIngredient={handleRemoveIngredient}
-              onSearch={() => handleSearch()}
-              isLoading={isLoading}
-              cuisine={cuisine}
-              onCuisineChange={handleCuisineChange}
-            />
+        {/* Main Content Area */}
+        <main className="mobile-main">
+          {activeTab === 'search' && (
+            <>
+              {/* Ingredient Hero Search */}
+              <IngredientInput
+                ingredients={ingredients}
+                onAddIngredient={handleAddIngredient}
+                onRemoveIngredient={handleRemoveIngredient}
+                onSearch={() => handleSearch()}
+                isLoading={isLoading}
+                cuisine={cuisine}
+                onCuisineChange={handleCuisineChange}
+              />
 
-            {/* Recipes Grid */}
-            <RecipeGrid
-              recipes={recipes}
-              isLoading={isLoading}
-              savedRecipeIds={savedRecipeIds}
-              onToggleSave={handleToggleSave}
+              {/* Recipes Feed */}
+              <RecipeGrid
+                recipes={recipes}
+                isLoading={isLoading}
+                savedRecipeIds={savedRecipeIds}
+                onToggleSave={handleToggleSave}
+                onSelectRecipe={(r) => setSelectedRecipe(r)}
+                onTryPreset={handleTryPreset}
+              />
+            </>
+          )}
+
+          {activeTab === 'saved' && (
+            <SavedRecipes
+              savedRecipes={savedRecipes}
+              onRemoveSaved={handleRemoveSaved}
               onSelectRecipe={(r) => setSelectedRecipe(r)}
-              onTryPreset={handleTryPreset}
+              onBackToSearch={() => setActiveTab('search')}
             />
-          </>
-        ) : (
-          /* Firebase Saved Recipes View */
-          <SavedRecipes
-            savedRecipes={savedRecipes}
-            onRemoveSaved={handleRemoveSaved}
-            onSelectRecipe={(r) => setSelectedRecipe(r)}
-            onBackToSearch={() => setActiveTab('search')}
+          )}
+
+          {activeTab === 'tips' && (
+            <RescueTips onBackToDiscover={() => setActiveTab('search')} />
+          )}
+        </main>
+
+        {/* Recipe Bottom Sheet Modal */}
+        {selectedRecipe && (
+          <RecipeModal
+            recipe={selectedRecipe}
+            onClose={() => setSelectedRecipe(null)}
+            isSaved={savedRecipeIds.has(selectedRecipe.id)}
+            onToggleSave={handleToggleSave}
           />
         )}
-      </main>
 
-      {/* Recipe Detail Modal */}
-      {selectedRecipe && (
-        <RecipeModal
-          recipe={selectedRecipe}
-          onClose={() => setSelectedRecipe(null)}
-          isSaved={savedRecipeIds.has(selectedRecipe.id)}
-          onToggleSave={handleToggleSave}
+        {/* Mobile Bottom Navigation Bar */}
+        <BottomNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          savedCount={savedCount}
         />
-      )}
-
-      {/* Eco & API Footer */}
-      <Footer />
+      </div>
     </div>
   );
 }

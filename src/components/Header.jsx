@@ -1,63 +1,43 @@
 import React from 'react';
-import { ChefHat, Bookmark, Sparkles, Trash2 } from 'lucide-react';
+import { ChefHat, Trash2, Refrigerator } from 'lucide-react';
 import './Header.css';
 
 export default function Header({ 
-  activeTab, 
-  setActiveTab, 
-  savedCount, 
   ingredientCount,
-  onClearIngredients 
+  onClearIngredients,
+  onLogoClick
 }) {
   return (
-    <header className="header-container">
-      <div className="header-inner">
-        {/* Logo and branding */}
-        <div className="brand" onClick={() => setActiveTab('search')}>
-          <div className="logo-badge">
-            <ChefHat className="logo-icon" size={28} />
+    <header className="mobile-header">
+      <div className="mobile-header-inner">
+        {/* Brand */}
+        <div className="mobile-brand" onClick={onLogoClick}>
+          <div className="mobile-logo-badge">
+            <ChefHat size={20} />
           </div>
-          <div className="brand-text">
-            <h1 className="brand-title">
-              Fridge<span className="accent-2">2</span>Table
-            </h1>
-            <p className="brand-tagline">Zero food waste. Endless delicious meals.</p>
+          <div className="mobile-brand-title">
+            <span>Fridge</span><span className="accent-2">2</span><span>Table</span>
           </div>
         </div>
 
-        {/* Navigation / Actions */}
-        <div className="header-actions">
-          {ingredientCount > 0 && activeTab === 'search' && (
+        {/* Inventory Counter & Quick Clear */}
+        <div className="mobile-header-actions">
+          <div className="fridge-count-pill" title={`${ingredientCount} items in fridge`}>
+            <Refrigerator size={14} />
+            <span>{ingredientCount} items</span>
+          </div>
+
+          {ingredientCount > 0 && (
             <button 
-              className="btn-ghost"
+              type="button"
+              className="btn-mobile-clear"
               onClick={onClearIngredients}
-              title="Clear all ingredients"
+              title="Clear Fridge items"
+              aria-label="Clear Fridge items"
             >
-              <Trash2 size={16} />
-              <span>Clear Fridge ({ingredientCount})</span>
+              <Trash2 size={15} />
             </button>
           )}
-
-          <nav className="tab-nav">
-            <button
-              className={`nav-tab ${activeTab === 'search' ? 'active' : ''}`}
-              onClick={() => setActiveTab('search')}
-            >
-              <Sparkles size={16} />
-              <span>Discover</span>
-            </button>
-
-            <button
-              className={`nav-tab ${activeTab === 'saved' ? 'active' : ''}`}
-              onClick={() => setActiveTab('saved')}
-            >
-              <Bookmark size={16} />
-              <span>Saved Recipes</span>
-              {savedCount > 0 && (
-                <span className="badge-counter">{savedCount}</span>
-              )}
-            </button>
-          </nav>
         </div>
       </div>
     </header>

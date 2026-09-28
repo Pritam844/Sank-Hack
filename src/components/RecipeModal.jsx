@@ -75,6 +75,11 @@ export default function RecipeModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-window glass-panel" onClick={(e) => e.stopPropagation()}>
+        {/* Mobile Pull Handle */}
+        <div className="modal-pull-handle-wrap">
+          <div className="modal-pull-handle" />
+        </div>
+
         {/* Close Button */}
         <button className="btn-modal-close" onClick={onClose} aria-label="Close modal">
           <X size={20} />
