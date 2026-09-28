@@ -115,7 +115,8 @@ export default function App() {
   const handleClearIngredients = () => {
     setIngredients([]);
     setRecipes([]);
-    showToast('Fridge cleared.', 'info');
+    localStorage.removeItem('f2t_ingredients');
+    showToast('Fridge cleared. Add new leftovers!', 'info');
   };
 
   // Trigger recipe search with Indian cuisine filter & max-used-ingredients ranking
@@ -154,12 +155,19 @@ export default function App() {
     handleSearch(newCuisine);
   };
 
-  // Initial fetch on mount with default ingredients
+  // Automatically search and update recipes whenever ingredients or cuisine change!
   useEffect(() => {
-    if (ingredients.length > 0 && recipes.length === 0) {
-      handleSearch();
+    if (ingredients.length === 0) {
+      setRecipes([]);
+      return;
     }
-  }, []);
+
+    const timer = setTimeout(() => {
+      handleSearch();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [ingredients, cuisine]);
 
   // Try preset combo
   const handleTryPreset = (combo) => {
