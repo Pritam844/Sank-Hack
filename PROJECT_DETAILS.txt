@@ -1,0 +1,116 @@
+================================================================================
+FRIDGE2TABLE - PROJECT OVERVIEW, FEATURES, TECHNOLOGIES & VERCEL HOSTING
+================================================================================
+
+1. FEATURES
+--------------------------------------------------------------------------------
+* Mobile-First Native App Experience:
+  - Specially designed for mobile smartphones with a 440px native shell.
+  - Fixed mobile bottom navigation bar (Discover, Saved Vault, Rescue Tips).
+  - Safe-area notch and home-indicator support (iOS & Android).
+  - Pull-to-dismiss bottom sheet modal for recipe details.
+
+* Rapid Leftover Ingredient Input:
+  - Smart search bar supporting single items or comma-separated ingredient lists.
+  - Removable ingredient chips with visual count and instant clear-fridge action.
+  - Quick-add leftover pantry pills for Indian kitchen staples:
+    (Paneer, Eggs, Tomatoes, Onions, Potatoes, Rice, Garlic, Ginger, Spinach, Butter, Green Chili, Chicken).
+
+* Indian Cuisine Filter & Max-Match Ranking:
+  - Filters authentic Indian dishes using Spoonacular's complexSearch API.
+  - Dishes ranked by "max-used-ingredients" so meals requiring the most fridge
+    items appear at the very top.
+  - Option to toggle between Indian Cuisine (best match) and All Cuisines (global).
+  - Pre-loaded Indian rescue recipes: Dhaba Egg Bhurji, Shahi Paneer Butter Masala,
+    Crispy Aloo Jeera Skillet, and Homestyle Chicken Curry.
+
+* 10-Minute Instant Grocery Ordering:
+  - Missing ingredients on every recipe card and modal include 1-click links
+    to India's top 5 quick-commerce apps:
+    1. Zepto (https://www.zeptonow.com/search?q=...)
+    2. Blinkit (https://blinkit.com/s/?q=...)
+    3. Swiggy Instamart (https://www.swiggy.com/instamart/search?query=...)
+    4. BigBasket / bbnow (https://www.bigbasket.com/ps/?q=...)
+    5. Flipkart Minutes (https://www.flipkart.com/search?q=...&marketplace=GROCERY)
+
+* Cloud Recipe Vault (Firebase Realtime Database):
+  - Bookmark recipes with a single tap (accompanied by a celebratory confetti burst).
+  - Saved recipes sync in real-time to Firebase Realtime Database across sessions.
+  - Search and filter within saved recipes, with one-tap removal.
+  - Automatic local-storage fallback for offline resilience.
+
+* Interactive Cook Mode:
+  - Bottom sheet popup with full preparation timing and serving portions.
+  - Step-by-step analyzed cooking instructions.
+  - Direct links to original publishers and source recipes.
+
+* Zero-Waste Kitchen Rescue Tips:
+  - Dedicated mobile tab packed with Indian culinary preservation techniques
+    (preserving paneer in water, herb storage jars, day-old rice hacks, etc.).
+
+
+2. TECHNOLOGIES USED
+--------------------------------------------------------------------------------
+* Frontend Framework:
+  - React 19 (Latest version with modern Hooks: useState, useEffect, useCallback, useMemo)
+  - JavaScript (ES Modules / modern async-await)
+
+* Build Tool & Bundler:
+  - Vite 8 (Ultra-fast HMR and production bundle optimization)
+
+* Backend & Database:
+  - Firebase 12 (Modular SDK)
+  - Firebase Realtime Database (@firebase/database) for live cloud syncing
+
+* External APIs:
+  - Spoonacular Food API (complexSearch with cuisine=Indian, sort=max-used-ingredients,
+    fillIngredients=true, and addRecipeInformation=true)
+  - Quick-Commerce Search Query Gateways (Zepto, Blinkit, Swiggy Instamart, BigBasket, Flipkart Minutes)
+
+* Styling & Design System:
+  - Custom Vanilla CSS (No heavy framework dependencies, 100% responsive)
+  - Culinary Neon Dark Theme (HSL harmonious dark palette)
+  - Glassmorphism effects (backdrop-filter: blur, semi-transparent overlays)
+  - Keyframe animations (sheetSlideUp, fadeIn, pulseGlow, shimmer skeleton loaders)
+  - Typography: Google Fonts (Outfit & Plus Jakarta Sans)
+
+* Icons & Animation Libraries:
+  - Lucide React (feather-style modern icons)
+  - Canvas-Confetti (micro-interaction physics on bookmarking)
+
+
+3. VERCEL HOSTING GUIDE (STEP-BY-STEP)
+--------------------------------------------------------------------------------
+Your project is already connected and pushed to GitHub at:
+https://github.com/Pritam844/Sank-Hack
+
+Follow these steps to deploy it live permanently on Vercel for free:
+
+Step 1: Go to Vercel
+  - Visit https://vercel.com and log in with your GitHub account.
+
+Step 2: Import Your Repository
+  - In your Vercel Dashboard, click the "Add New..." button and select "Project".
+  - Locate "Pritam844/Sank-Hack" in the list of GitHub repositories and click "Import".
+
+Step 3: Configure Project Settings
+  - Framework Preset: Vite (automatically detected)
+  - Root Directory: ./ (leave default)
+  - Build Command: npm run build (or vite build)
+  - Output Directory: dist (automatically detected)
+  - Install Command: npm install (automatically detected)
+
+Step 4: Deploy
+  - Click the "Deploy" button.
+  - Vercel will build the React 19 app in less than 30 seconds.
+  - Once finished, you will receive a free, permanent HTTPS URL
+    (e.g., https://sank-hack.vercel.app).
+
+Step 5: Custom Domain (Optional)
+  - Go to Project Settings -> Domains in your Vercel dashboard to add your own
+    custom domain if desired.
+
+================================================================================
+Generated for: Fridge2Table (Sank-Hack)
+Repository: https://github.com/Pritam844/Sank-Hack
+================================================================================
