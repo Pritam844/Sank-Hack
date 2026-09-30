@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build APK
@@ -25,12 +28,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+          cache: 'gradle'
 
       - name: Install Node Dependencies
-        run: npm ci || npm install
+        run: npm install
 
       - name: Build Web Application
         run: npm run build
@@ -44,11 +45,27 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK for easy download
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk ./Chefmate-AI.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Chefmate-AI-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Chefmate-AI-apk
+          path: ./Chefmate-AI.apk
           retention-days: 14
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        continue-on-error: true
+        with:
+          tag_name: v1.0.0
+          name: Chefmate AI v1.0.0 APK
+          body: |
+            Download and install Chefmate AI APK directly on your Android phone!
+          files: ./Chefmate-AI.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
