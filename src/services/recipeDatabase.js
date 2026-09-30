@@ -390,12 +390,77 @@ export const RECIPE_DATABASE = [
       { id: 113, name: "butter", original: "1 tbsp butter", amount: 1, unit: "tbsp" }
     ],
     instructions: "1. Whisk eggs with chopped onions, tomatoes, chilies, turmeric, and salt.\n2. Dip bread slices into the egg mixture, coating evenly on both sides.\n3. Melt butter in a skillet; place coated bread into the pan.\n4. Cook 2-3 minutes per side until golden brown and cooked through.\n5. Serve hot with chai."
+  },
+  {
+    id: 1021,
+    title: "Homestyle Onion & Tomato Masala Omelette",
+    image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80",
+    cuisines: ["Indian", "Global"],
+    readyInMinutes: 8,
+    servings: 1,
+    likes: 1420,
+    summary: "A fluffy, golden skillet omelette folded with sweet caramelized onions, juicy diced tomatoes, and cracked pepper.",
+    ingredients: [
+      { id: 114, name: "eggs", original: "3 eggs beaten", amount: 3, unit: "pieces" },
+      { id: 115, name: "onions", original: "1/2 onion finely chopped", amount: 0.5, unit: "medium" },
+      { id: 116, name: "tomatoes", original: "1 small tomato diced", amount: 1, unit: "small" },
+      { id: 117, name: "black pepper", original: "Pinch of black pepper", amount: 0.25, unit: "tsp" },
+      { id: 118, name: "butter", original: "1 tsp butter or oil", amount: 1, unit: "tsp" }
+    ],
+    instructions: "1. Beat eggs with salt and pepper until light and airy.\n2. Sauté onions and tomatoes in butter for 2 minutes until softened.\n3. Pour beaten eggs evenly over the vegetables in the pan.\n4. Cook on medium-low until eggs set, fold in half, and serve hot."
+  },
+  {
+    id: 1022,
+    title: "Crispy Aloo Pyaaz Sukha (Potato Onion Stir-Fry)",
+    image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    cuisines: ["Indian"],
+    readyInMinutes: 18,
+    servings: 2,
+    likes: 980,
+    summary: "Crispy golden potato cubes skillet-tossed with sweet caramelized onions and earthy cumin.",
+    ingredients: [
+      { id: 119, name: "potatoes", original: "2 medium potatoes diced", amount: 2, unit: "medium" },
+      { id: 120, name: "onions", original: "1 large onion sliced", amount: 1, unit: "large" },
+      { id: 121, name: "cumin", original: "1 tsp cumin seeds", amount: 1, unit: "tsp" },
+      { id: 122, name: "turmeric", original: "1/2 tsp turmeric powder", amount: 0.5, unit: "tsp" },
+      { id: 123, name: "cooking oil", original: "2 tbsp cooking oil", amount: 2, unit: "tbsp" }
+    ],
+    instructions: "1. Heat oil in a pan. Splutter cumin seeds.\n2. Add sliced onions and cook until translucent.\n3. Add diced potatoes, turmeric, and salt.\n4. Cover and cook on low heat for 10 minutes until potatoes are fork-tender.\n5. Uncover and pan-roast on high for 3-4 minutes until crispy golden."
   }
 ];
 
+export const PANTRY_STAPLES = [
+  'salt',
+  'black pepper',
+  'pepper',
+  'water',
+  'cooking oil',
+  'oil',
+  'butter',
+  'ghee',
+  'turmeric',
+  'turmeric & chili',
+  'red chili powder',
+  'chili powder',
+  'green chili',
+  'garam masala',
+  'cumin',
+  'cumin seeds',
+  'jeera',
+  'coriander powder',
+  'mustard seeds',
+  'kasuri methi',
+  'sugar'
+];
+
+export function isPantryStaple(name = '') {
+  const norm = name.toLowerCase().trim();
+  return PANTRY_STAPLES.some(staple => norm === staple || norm.includes(staple));
+}
+
 /**
  * Intelligent Match Engine: Dynamically matches user fridge ingredients
- * against recipe database, computing exact used & missing items!
+ * against recipe database, prioritizing EXACT MATCHES FIRST (0 missing items)!
  */
 export const matchRecipesFromDatabase = (ingredientsString, cuisine = 'Indian') => {
   if (!ingredientsString || ingredientsString.trim() === '') {
@@ -413,7 +478,7 @@ export const matchRecipesFromDatabase = (ingredientsString, cuisine = 'Indian') 
 
   for (const recipe of RECIPE_DATABASE) {
     // If specific cuisine requested (and not 'all'), check cuisine tag
-    const isIndian = recipe.cuisines.includes('Indian');
+    const isIndian = recipe.cuisines ? recipe.cuisines.includes('Indian') : true;
     if (cuisine === 'Indian' && !isIndian) {
       continue;
     }
@@ -436,14 +501,17 @@ export const matchRecipesFromDatabase = (ingredientsString, cuisine = 'Indian') 
       if (hasItem) {
         usedIngredients.push(item);
       } else {
-        missedIngredients.push(item);
+        // Only classify as a missing grocery if it's NOT a common household pantry staple
+        if (!isPantryStaple(item.name)) {
+          missedIngredients.push(item);
+        }
       }
     }
 
     // Include recipe if at least 1 ingredient matches
     if (usedIngredients.length > 0) {
-      const totalCount = recipe.ingredients.length;
-      const matchRatio = usedIngredients.length / totalCount;
+      const totalEvaluated = usedIngredients.length + missedIngredients.length;
+      const matchRatio = totalEvaluated > 0 ? usedIngredients.length / totalEvaluated : 1;
 
       matched.push({
         ...recipe,
@@ -456,13 +524,27 @@ export const matchRecipesFromDatabase = (ingredientsString, cuisine = 'Indian') 
     }
   }
 
-  // Sort by highest match % and maximum used ingredients
+  // STRICT PRIORITY: EXACT MATCH FIRST!
+  // 1. Recipes with 0 missing groceries (Exact 100% Match) ALWAYS ranked at the top!
+  // 2. Fewest missing ingredients (missedCount ASC)
+  // 3. Highest match ratio % (DESC)
+  // 4. Maximum used fridge ingredients (DESC)
   matched.sort((a, b) => {
+    const aExact = a.missedIngredientCount === 0 ? 1 : 0;
+    const bExact = b.missedIngredientCount === 0 ? 1 : 0;
+    if (bExact !== aExact) return bExact - aExact;
+
+    if (a.missedIngredientCount !== b.missedIngredientCount) {
+      return a.missedIngredientCount - b.missedIngredientCount;
+    }
+
     if (b.matchRatio !== a.matchRatio) {
       return b.matchRatio - a.matchRatio;
     }
+
     return b.usedIngredientCount - a.usedIngredientCount;
   });
 
   return matched;
 };
+

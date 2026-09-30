@@ -16,7 +16,7 @@ export default function Header({
             <ChefHat size={20} />
           </div>
           <div className="mobile-brand-title">
-            <span>Fridge</span><span className="accent-2">2</span><span>Table</span>
+            <span>ChefMate</span> <span className="accent-2">AI</span>
           </div>
         </div>
 

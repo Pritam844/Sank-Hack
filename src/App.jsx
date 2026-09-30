@@ -27,7 +27,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : ['eggs', 'tomatoes', 'onions'];
   });
 
-  // Matched recipes from Spoonacular
+  // Matched recipes from Firebase / recipe engine
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');

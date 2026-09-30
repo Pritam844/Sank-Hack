@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, ShoppingBag, CheckCircle2, AlertCircle, ExternalLink, Flame, Clock } from 'lucide-react';
+import { Heart, ShoppingBag, CheckCircle2, AlertCircle, ExternalLink, Flame, Clock, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import MissingIngredientItem from './MissingIngredientItem';
 import './RecipeCard.css';
@@ -17,6 +17,7 @@ export default function RecipeCard({
   const missedCount = recipe.missedIngredientCount ?? (recipe.missedIngredients ? recipe.missedIngredients.length : 0);
   const totalCount = usedCount + missedCount;
   const matchPercentage = totalCount > 0 ? Math.round((usedCount / totalCount) * 100) : 100;
+  const isExactMatch = missedCount === 0;
 
   const handleSaveClick = (e) => {
     e.stopPropagation();
@@ -45,7 +46,7 @@ export default function RecipeCard({
 
   return (
     <article 
-      className={`recipe-card glass-panel ${isHovered ? 'hovered' : ''}`}
+      className={`recipe-card glass-panel ${isExactMatch ? 'is-exact-match' : ''} ${isHovered ? 'hovered' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onSelectRecipe(recipe)}
@@ -66,9 +67,12 @@ export default function RecipeCard({
         <div className="card-image-gradient" />
 
         {/* Match Badge */}
-        <div className="badge-match" title={`${usedCount} of ${totalCount} ingredients found in your fridge`}>
-          <span className="match-num">{matchPercentage}%</span>
-          <span className="match-label">Fridge Match</span>
+        <div 
+          className={`badge-match ${isExactMatch ? 'badge-exact-match' : ''}`} 
+          title={isExactMatch ? "100% Exact Match - You have all required ingredients!" : `${usedCount} of ${totalCount} ingredients found in your fridge`}
+        >
+          <span className="match-num">{isExactMatch ? '✨ 100%' : `${matchPercentage}%`}</span>
+          <span className="match-label">{isExactMatch ? 'Exact Match' : 'Fridge Match'}</span>
         </div>
 
         {/* Favorite Bookmark Button */}
@@ -103,8 +107,8 @@ export default function RecipeCard({
               <span>{recipe.likes} saves</span>
             </div>
           )}
-          <div className="meta-item ratio">
-            <span>{usedCount} in fridge / {missedCount} missing</span>
+          <div className={`meta-item ratio ${isExactMatch ? 'ratio-exact' : ''}`}>
+            <span>{isExactMatch ? 'All in fridge' : `${usedCount} in fridge / ${missedCount} missing`}</span>
           </div>
         </div>
 
@@ -125,23 +129,30 @@ export default function RecipeCard({
           </div>
         )}
 
-        {/* Missing Ingredients Section */}
-        {recipe.missedIngredients && recipe.missedIngredients.length > 0 && (
-          <div className="ingredients-block">
-            <div className="block-label text-amber">
-              <AlertCircle size={13} />
-              <span>Missing Items ({recipe.missedIngredients.length})</span>
-            </div>
-            <div className="chips-list">
-              {recipe.missedIngredients.map((item, idx) => (
-                <MissingIngredientItem
-                  key={item.id || idx}
-                  ingredient={item}
-                  variant="chip"
-                />
-              ))}
-            </div>
+        {/* Missing Ingredients Section or Zero Missing Banner */}
+        {isExactMatch ? (
+          <div className="exact-match-tag">
+            <Sparkles size={14} className="text-emerald" />
+            <span>Zero missing groceries &bull; Cook immediately!</span>
           </div>
+        ) : (
+          recipe.missedIngredients && recipe.missedIngredients.length > 0 && (
+            <div className="ingredients-block">
+              <div className="block-label text-amber">
+                <AlertCircle size={13} />
+                <span>Missing Items ({recipe.missedIngredients.length})</span>
+              </div>
+              <div className="chips-list">
+                {recipe.missedIngredients.map((item, idx) => (
+                  <MissingIngredientItem
+                    key={item.id || idx}
+                    ingredient={item}
+                    variant="chip"
+                  />
+                ))}
+              </div>
+            </div>
+          )
         )}
 
         {/* View Details Footer */}

@@ -12,10 +12,35 @@ export default function RecipeGrid({
   onTryPreset
 }) {
   const [sortBy, setSortBy] = useState('match'); // 'match' | 'missing' | 'likes'
+  const [filterMode, setFilterMode] = useState('all'); // 'all' | 'exact' | 'few'
+
+  // Stats
+  const exactMatchCount = useMemo(() => {
+    return (recipes || []).filter(
+      r => (r.missedIngredientCount ?? r.missedIngredients?.length ?? 0) === 0
+    ).length;
+  }, [recipes]);
+
+  const fewMissingCount = useMemo(() => {
+    return (recipes || []).filter(r => {
+      const missed = r.missedIngredientCount ?? r.missedIngredients?.length ?? 0;
+      return missed > 0 && missed <= 2;
+    }).length;
+  }, [recipes]);
 
   const sortedRecipes = useMemo(() => {
     if (!recipes || recipes.length === 0) return [];
-    const list = [...recipes];
+    let list = [...recipes];
+
+    // Filter by mode
+    if (filterMode === 'exact') {
+      list = list.filter(r => (r.missedIngredientCount ?? r.missedIngredients?.length ?? 0) === 0);
+    } else if (filterMode === 'few') {
+      list = list.filter(r => {
+        const missed = r.missedIngredientCount ?? r.missedIngredients?.length ?? 0;
+        return missed <= 2;
+      });
+    }
 
     if (sortBy === 'match') {
       return list.sort((a, b) => {
@@ -29,7 +54,19 @@ export default function RecipeGrid({
         const bTotal = bUsed + bMissed;
         const bRatio = bTotal > 0 ? bUsed / bTotal : 0;
 
-        return bRatio - aRatio;
+        // 1. EXACT MATCHES (0 missing items) ALWAYS FIRST!
+        const aExact = aMissed === 0 ? 1 : 0;
+        const bExact = bMissed === 0 ? 1 : 0;
+        if (bExact !== aExact) return bExact - aExact;
+
+        // 2. Fewest missing ingredients
+        if (aMissed !== bMissed) return aMissed - bMissed;
+
+        // 3. Highest match ratio %
+        if (bRatio !== aRatio) return bRatio - aRatio;
+
+        // 4. Most used ingredients
+        return bUsed - aUsed;
       });
     }
 
@@ -46,7 +83,8 @@ export default function RecipeGrid({
     }
 
     return list;
-  }, [recipes, sortBy]);
+  }, [recipes, sortBy, filterMode]);
+
 
   // Loading skeleton
   if (isLoading) {
@@ -143,12 +181,54 @@ export default function RecipeGrid({
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
           >
-            <option value="match">Highest Fridge Match %</option>
+            <option value="match">Exact Match First</option>
             <option value="missing">Fewest Missing Groceries</option>
             <option value="likes">Most Popular / Saved</option>
           </select>
         </div>
       </div>
+
+      {/* Quick Filter Tabs */}
+      <div className="filter-pill-row">
+        <button
+          type="button"
+          className={`filter-pill ${filterMode === 'all' ? 'active' : ''}`}
+          onClick={() => setFilterMode('all')}
+        >
+          All ({recipes.length})
+        </button>
+
+        {exactMatchCount > 0 && (
+          <button
+            type="button"
+            className={`filter-pill pill-exact ${filterMode === 'exact' ? 'active' : ''}`}
+            onClick={() => setFilterMode('exact')}
+          >
+            <Sparkles size={13} />
+            <span>Exact Matches ({exactMatchCount})</span>
+          </button>
+        )}
+
+        {fewMissingCount > 0 && (
+          <button
+            type="button"
+            className={`filter-pill ${filterMode === 'few' ? 'active' : ''}`}
+            onClick={() => setFilterMode('few')}
+          >
+            <span>Missing 1-2 Items ({fewMissingCount})</span>
+          </button>
+        )}
+      </div>
+
+      {/* Exact Match Notification */}
+      {exactMatchCount > 0 && filterMode === 'all' && (
+        <div className="exact-matches-alert">
+          <Sparkles size={15} className="text-emerald" />
+          <span>
+            <strong>{exactMatchCount} exact {exactMatchCount === 1 ? 'match' : 'matches'} found!</strong> 0 missing groceries — ready to cook right now!
+          </span>
+        </div>
+      )}
 
       {/* Grid */}
       <div className="recipe-grid">

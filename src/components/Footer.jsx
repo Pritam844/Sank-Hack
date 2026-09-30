@@ -10,10 +10,10 @@ export default function Footer() {
           {/* Mission */}
           <div className="footer-col">
             <h4 className="footer-brand">
-              Fridge<span className="accent-2">2</span>Table
+              Chefmate <span className="accent-2">AI</span>
             </h4>
             <p className="footer-desc">
-              Every year, over 1.3 billion tons of food are wasted. Fridge2Table helps you turn lonely fridge leftovers into restaurant-quality meals with zero waste.
+              Every year, over 1.3 billion tons of food are wasted. Chefmate AI helps you turn lonely fridge leftovers into restaurant-quality meals with zero waste.
             </p>
             <div className="firebase-status-pill">
               <span className="status-dot" />
@@ -39,26 +39,21 @@ export default function Footer() {
               <span className="tech-badge">React 19</span>
               <span className="tech-badge">Vite</span>
               <span className="tech-badge">Firebase Realtime DB</span>
-              <span className="tech-badge">Spoonacular Recipe API</span>
+              <span className="tech-badge">Firebase Cloud Firestore</span>
               <span className="tech-badge">10-Min Delivery (Zepto &bull; Blinkit &bull; Instamart &bull; BigBasket &bull; Flipkart)</span>
             </div>
             <p className="attribution-text">
               Recipe intelligence powered by{' '}
-              <a 
-                href="https://spoonacular.com/food-api" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="attr-link"
-              >
-                Spoonacular API <ExternalLink size={12} />
-              </a>
+              <span className="attr-link">
+                Firebase Cloud Database <Database size={12} />
+              </span>
             </p>
           </div>
         </div>
 
         <div className="footer-bottom">
           <p className="copy-text">
-            &copy; {new Date().getFullYear()} Fridge2Table. Crafted with{' '}
+            &copy; {new Date().getFullYear()} Chefmate AI. Crafted with{' '}
             <Heart size={14} className="heart-icon" fill="#ff5e57" color="#ff5e57" /> for food lovers everywhere.
           </p>
         </div>
