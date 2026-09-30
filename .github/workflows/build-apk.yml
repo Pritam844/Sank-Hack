@@ -48,17 +48,19 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          ./gradlew :app:assembleDebug --no-daemon
-          find . -name "*.apk" -o -name "*.aar"
-          APK_PATH=$(find . -name "*.apk" | head -n 1)
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee ../build.log
+          APK_PATH=$(find app/build/outputs/apk -name "*.apk" 2>/dev/null | head -n 1)
           if [ -n "$APK_PATH" ]; then
             cp "$APK_PATH" ../Chefmate-AI.apk
-          else
-            find . -type f
-            exit 1
+            ls -lh ../Chefmate-AI.apk
           fi
-          cd ..
-          ls -lh ./Chefmate-AI.apk
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
