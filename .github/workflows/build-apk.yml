@@ -48,7 +48,14 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee gradle-build.log
+
+      - name: Upload Error Log if Failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-error-log
+          path: android/gradle-build.log
 
       - name: Rename APK for easy download
         run: cp android/app/build/outputs/apk/debug/app-debug.apk ./Chefmate-AI.apk
