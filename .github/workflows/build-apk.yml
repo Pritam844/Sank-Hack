@@ -58,7 +58,9 @@ jobs:
           path: android/gradle-build.log
 
       - name: Rename APK for easy download
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk ./Chefmate-AI.apk
+        run: |
+          find android/app/build -name "*.apk" -exec cp {} ./Chefmate-AI.apk \;
+          ls -lh ./Chefmate-AI.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
