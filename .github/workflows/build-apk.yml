@@ -59,8 +59,15 @@ jobs:
 
       - name: Rename APK for easy download
         run: |
-          find android/app/build -name "*.apk" -exec cp {} ./Chefmate-AI.apk \;
-          ls -lh ./Chefmate-AI.apk
+          find . -name "*.apk"
+          APK_FILE=$(find . -name "*.apk" | head -n 1)
+          if [ -n "$APK_FILE" ]; then
+            cp "$APK_FILE" ./Chefmate-AI.apk
+            ls -lh ./Chefmate-AI.apk
+          else
+            echo "No APK found in repository"
+            exit 1
+          fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
